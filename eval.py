@@ -36,7 +36,7 @@ def str2bool(v):
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Evaluation')
 parser.add_argument('--trained_model',
-                    default='weights/ssd300_mAP_77.43_v2.pth', type=str,
+                    default='checkpoints/ssd300_VOC_115000.pth', type=str,
                     help='Trained state_dict file path to open')
 parser.add_argument('--save_folder', default='eval/', type=str,
                     help='File path to save results')
@@ -375,6 +375,7 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
     output_dir = get_output_dir('ssd300_120000', set_type)
     det_file = os.path.join(output_dir, 'detections.pkl')
 
+    start_time = time.time()
     for i in range(num_images):
         im, gt, h, w = dataset.pull_item(i)
 
@@ -403,8 +404,10 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
                                                                  copy=False)
             all_boxes[j][i] = cls_dets
 
-        print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1,
-                                                    num_images, detect_time))
+        #print('im_detect: {:d}/{:d} {:.3f}s'.format(i + 1, num_images, detect_time))
+        elapsed_time = time.strftime('%H:%M:%S', time.gmtime(time.time() - start_time))
+        print("%s | %.2f%% Evaluated %d out of %d images       \r" %
+                (elapsed_time, round(100.0*(i+1)/num_images, 2), (i+1), num_images))
 
     with open(det_file, 'wb') as f:
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
